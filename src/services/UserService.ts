@@ -2,16 +2,26 @@ import { Repository } from "typeorm";
 
 import { User } from "../entity/User";
 import { UserData } from "../types";
+import createHttpError from "http-errors";
 
 export class UserService {
   constructor(private userRepository: Repository<User>) {}
   async create({ firstName, lastName, email, password }: UserData) {
-    const response = await this.userRepository.save({
-      firstName,
-      lastName,
-      email,
-      password,
-    });
-    return response;
+    try {
+      const response = await this.userRepository.save({
+        firstName,
+        lastName,
+        email,
+        password,
+      });
+      return response;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err) {
+      const error = createHttpError(
+        500,
+        "Failed to store the data in the database",
+      );
+      throw error;
+    }
   }
 }
