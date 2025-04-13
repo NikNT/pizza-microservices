@@ -181,6 +181,52 @@ describe("POST /auth/register", () => {
       const users = await userRepository.find();
       expect(users).toHaveLength(0);
     });
+
+    it("should return 400 status code if firstName field is missing", async () => {
+      // Arrange
+      const userData = {
+        firstName: "",
+        lastName: "Doe",
+        email: "vHb0g@example.com",
+        password: "password123",
+      };
+
+      //Act
+      const response = await request(app).post("/auth/register").send(userData);
+
+      //Assert
+      expect(response.status).toBe(400);
+    });
+    it("should return 400 status code if lastName field is missing", async () => {
+      // Arrange
+      const userData = {
+        firstName: "John",
+        lastName: "",
+        email: "vHb0g@example.com",
+        password: "password123",
+      };
+
+      //Act
+      const response = await request(app).post("/auth/register").send(userData);
+
+      //Assert
+      expect(response.status).toBe(400);
+    });
+    it("should return 400 status code if password field is missing", async () => {
+      // Arrange
+      const userData = {
+        firstName: "John",
+        lastName: "Doe",
+        email: "vHb0g@example.com",
+        password: "",
+      };
+
+      //Act
+      const response = await request(app).post("/auth/register").send(userData);
+
+      //Assert
+      expect(response.status).toBe(400);
+    });
   });
 
   describe("Fields are in invalid format", () => {
@@ -202,6 +248,58 @@ describe("POST /auth/register", () => {
       const user = users[0];
 
       expect(user.email).toBe("dvHb0g@example.com");
+    });
+
+    it("should return 400 status code if email is invalid", async () => {
+      // Arrange
+      const userData = {
+        firstName: "John",
+        lastName: "Doe",
+        email: "invalid-email",
+        password: "password123",
+      };
+
+      //Act
+      const response = await request(app).post("/auth/register").send(userData);
+
+      //Assert
+      expect(response.status).toBe(400);
+    });
+
+    it("should return 400 status code if password length is less than 8 characters", async () => {
+      // Arrange
+      const userData = {
+        firstName: "John",
+        lastName: "Doe",
+        email: "vHb0g@example.com",
+        password: "short",
+      };
+
+      //Act
+      const response = await request(app).post("/auth/register").send(userData);
+
+      //Assert
+      expect(response.status).toBe(400);
+    });
+
+    it("should return an array of error messages if email is missing", async () => {
+      // Arrange
+      const userData = {
+        firstName: "John",
+        lastName: "Doe",
+        email: "",
+        password: "password123",
+      };
+
+      //Act
+      const response = await request(app).post("/auth/register").send(userData);
+
+      //Assert
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty("errors");
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.errors).toBeInstanceOf(Array);
     });
   });
 });
