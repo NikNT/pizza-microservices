@@ -1,10 +1,12 @@
 import "reflect-metadata";
 import express, { Request, Response, NextFunction } from "express";
+import cookieParser from "cookie-parser";
 import logger from "./config/logger";
 import { HttpError } from "http-errors";
 import authRouter from "./routes/auth";
 
 const app = express();
+app.use(cookieParser());
 app.use(express.json());
 app.get("/", (req: Request, res: Response) => {
   res.send("Welcome to auth service");

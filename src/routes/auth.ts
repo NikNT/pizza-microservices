@@ -9,6 +9,8 @@ import loginValidator from "../validators/login-validator";
 import { TokenService } from "../services/TokenService";
 import { RefreshToken } from "../entity/RefreshToken";
 import { CredentialService } from "../services/CredentialService";
+import authenticate from "../middlewares/authenticate";
+import { AuthRequest } from "../types";
 
 const router = express.Router();
 
@@ -48,5 +50,13 @@ router.post(
       next(error);
     }
   },
+
+  router.get("/self", authenticate, async (req: Request, res: Response) => {
+    try {
+      await authController.self(req as AuthRequest, res);
+    } catch (error) {
+      console.log(error);
+    }
+  }),
 );
 export default router;
