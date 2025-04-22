@@ -58,5 +58,9 @@ router.post(
       console.log(error);
     }
   }),
+
+  router.post("/refresh", (req: Request, res: Response) => {
+    authController.refresh(req, res);
+  }),
 );
 export default router;

@@ -1,4 +1,4 @@
-import { NextFunction, Response } from "express";
+import { NextFunction, Response, Request } from "express";
 import { AuthRequest, RegisterUserRequest } from "../types";
 import { UserService } from "../services/UserService";
 import { Logger } from "winston";
@@ -158,5 +158,9 @@ export class AuthController {
       ...user,
       password: undefined,
     });
+  }
+
+  refresh(req: Request, res: Response) {
+    return res.status(200).json({});
   }
 }
