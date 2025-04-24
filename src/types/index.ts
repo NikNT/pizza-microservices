@@ -22,3 +22,8 @@ export interface AuthRequest extends Request {
     role: string;
   };
 }
+
+export interface AuthCookie {
+  accessToken: string;
+  refreshToken: string;
+}
