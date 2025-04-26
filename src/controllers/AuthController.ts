@@ -1,4 +1,4 @@
-import { NextFunction, Response, Request } from "express";
+import { NextFunction, Response } from "express";
 import { AuthRequest, RegisterUserRequest } from "../types";
 import { UserService } from "../services/UserService";
 import { Logger } from "winston";
@@ -160,7 +160,54 @@ export class AuthController {
     });
   }
 
-  refresh(req: Request, res: Response) {
+  async refresh(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const payload: JwtPayload = {
+        sub: req.auth.sub,
+        role: req.auth.role,
+      };
+
+      // generate access token
+      const accessToken = this.tokenService.generateAccessToken(payload);
+      const user = await this.userService.findbyId(Number(req.auth.sub));
+
+      if (!user) {
+        const error = createHttpError(400, "User not found");
+        next(error);
+        return;
+      }
+
+      // persist refresh token
+      const newRefreshToken = await this.tokenService.persistRefreshToken(user);
+      const refreshToken = this.tokenService.generateRefreshToken({
+        ...payload,
+        id: String(newRefreshToken.id),
+      });
+
+      // Delete old refresh token
+      await this.tokenService.deleteRefreshToken(Number(req.auth.id));
+
+      res.cookie("accessToken", accessToken, {
+        domain: "localhost",
+        sameSite: "strict",
+        maxAge: 1000 * 60 * 60, // 1 hour
+        httpOnly: true, // very important
+      });
+
+      res.cookie("refreshToken", refreshToken, {
+        domain: "localhost",
+        sameSite: "strict",
+        maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
+        httpOnly: true, // very important
+      });
+
+      this.logger.info("User logged in successfully", {
+        id: user.id,
+      });
+    } catch (error) {
+      next(error);
+      return;
+    }
     return res.status(200).json({});
   }
 }

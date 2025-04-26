@@ -11,6 +11,7 @@ import { RefreshToken } from "../entity/RefreshToken";
 import { CredentialService } from "../services/CredentialService";
 import authenticate from "../middlewares/authenticate";
 import { AuthRequest } from "../types";
+import validateRefreshToken from "../middlewares/validateRefreshToken";
 
 const router = express.Router();
 
@@ -59,8 +60,12 @@ router.post(
     }
   }),
 
-  router.post("/refresh", (req: Request, res: Response) => {
-    authController.refresh(req, res);
-  }),
+  router.post(
+    "/refresh",
+    validateRefreshToken,
+    async (req: Request, res: Response, next: NextFunction) => {
+      await authController.refresh(req as AuthRequest, res, next);
+    },
+  ),
 );
 export default router;
