@@ -14,6 +14,25 @@ export class AuthController {
     private tokenService: TokenService,
     private credentialService: CredentialService,
   ) {}
+
+  setAccessTokenCookie(res: Response, accessToken: string) {
+    res.cookie("accessToken", accessToken, {
+      domain: "localhost",
+      sameSite: "strict",
+      maxAge: 1000 * 60 * 60, // 1 hour
+      httpOnly: true, // very important
+    });
+  }
+
+  setRefreshTokenCookie(res: Response, refreshToken: string) {
+    res.cookie("refreshToken", refreshToken, {
+      domain: "localhost",
+      sameSite: "strict",
+      maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
+      httpOnly: true, // very important
+    });
+  }
+
   async register(req: RegisterUserRequest, res: Response, next: NextFunction) {
     const result = validationResult(req);
 
@@ -53,19 +72,11 @@ export class AuthController {
         id: String(newRefreshToken.id),
       });
 
-      res.cookie("accessToken", accessToken, {
-        domain: "localhost",
-        sameSite: "strict",
-        maxAge: 1000 * 60 * 60, // 1 hour
-        httpOnly: true, // very important
-      });
+      // set access token cookie
+      this.setAccessTokenCookie(res, accessToken);
 
-      res.cookie("refreshToken", refreshToken, {
-        domain: "localhost",
-        sameSite: "strict",
-        maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
-        httpOnly: true, // very important
-      });
+      // set refresh token cookie
+      this.setRefreshTokenCookie(res, refreshToken);
 
       res.status(201).json({
         id: user.id,
@@ -187,19 +198,11 @@ export class AuthController {
       // Delete old refresh token
       await this.tokenService.deleteRefreshToken(Number(req.auth.id));
 
-      res.cookie("accessToken", accessToken, {
-        domain: "localhost",
-        sameSite: "strict",
-        maxAge: 1000 * 60 * 60, // 1 hour
-        httpOnly: true, // very important
-      });
+      // set access token cookie
+      this.setAccessTokenCookie(res, accessToken);
 
-      res.cookie("refreshToken", refreshToken, {
-        domain: "localhost",
-        sameSite: "strict",
-        maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
-        httpOnly: true, // very important
-      });
+      // set refresh token cookie
+      this.setRefreshTokenCookie(res, refreshToken);
 
       this.logger.info("User logged in successfully", {
         id: user.id,
